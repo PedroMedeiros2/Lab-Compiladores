@@ -1,0 +1,327 @@
+/* 
+    TP1 - Compiladores
+    Discente Pedro Henrique Soares Medeiros  
+    Prof. Dr. Alberto Alexandre Assis Miranda
+    
+    
+    Análise léxica da linguagem de programação Ruby
+*/
+
+PARSER_BEGIN(Ruby)
+import java.io.*;
+class Ruby {
+	public static void main( String[] args )throws ParseException, Exception {
+		Ruby lex = new Ruby(new FileInputStream(args[0]));
+		
+    lex.AnaliseLexica();
+
+    }		
+	}
+
+PARSER_END(Ruby)
+
+
+/* Ignorar espaços em branco */
+SKIP: {
+  " "
+  |"\t"
+  |"\n"
+  |"\r"
+  |"\f"
+}
+
+/* Ignorar  comentários */
+SKIP: {
+  <SINGLE_LINE_COMMENT: "#" (~["\n","\r"])* ("\n" | "\r\n" | "\r") >
+| < MULTILINE_COMMENT: "=begin" ( (~["\n","\r"])* ("\n" | "\r\n" | "\r"))* "=end">
+}
+
+
+
+/* Palavras Reservadas */
+TOKEN : {
+  < BEGIN : "begin" >
+| < CLASS : "class" >
+| < ENSURE : "ensure" >
+| < NIL : "nil" >
+| < SELF : "self" >
+| < WHEN : "when" >
+| < END : "end" >
+| < DEF : "def" >
+| < FALSE : "false" > 
+| < NOT : "not" >
+| < SUPER : "super" >
+| < WHILE : "while" >
+| < ALIAS : "alias" >
+| < DEFINED : "defined?" >
+| < FOR : "for" >
+| < OR : "or" >
+| < THEN : "then" >
+| < YIELD : "yield" >
+| < AND : "and" >
+| < DO : "do" >
+| < IF : "if" >
+| < REDO : "redo" >
+| < TRUE : "true" >
+| < BEGIN_ : "BEGIN" >
+| < ELSE : "else" >
+| < IN : "in" >
+| < RESCUE : "rescue" >
+| < UNDEF : "undef" >
+| < BREAK : "break" >
+| < ELSIF : "elsif" >
+| < MODULE : "module" >
+| < RETRY : "retry" >
+| < UNLESS : "unless" >
+| < CASE : "case" >
+| < END_ : "END" >
+| < NEXT : "next" >
+| < RETURN : "return" >
+| < UNTIL : "until" >
+}
+
+
+
+/* Delimitadores */
+TOKEN: {
+  <OPEN_PARENTHESIS: "(" >
+| <CLOSE_PARENTHESIS: ")" >
+| <OPEN_BRACE: "{" >
+| <CLOSE_BRACE: "}" >
+| <OPEN_BRACKET: "[" >
+| <CLOSE_BRACKET: "]" >
+| <COMMA: "," >
+| <SEMICOLON: ";" >
+| <DOT: "." >
+| <DOUBLE_DOT: ".." >
+| <TRIPLE_DOT: "..." >
+| <DOUBLE_COLON: "::" >
+}
+
+
+
+/* Operadores aritméticos */
+TOKEN : {
+  <ADD: "+">
+| <SUB: "-">
+| <MUL: "*">
+| <DIV: "/">
+| <MOD: "%">
+| <EXP: "**">
+}
+
+
+/* Operadores de comparação */
+TOKEN : {
+  <EQ: "==">
+| <NEQ: "!=">
+| <GT: ">" >
+| <LT: "<" >
+| <GTE: ">=">
+| <LTE: "<=">
+| <CMP: "<=>">
+| <EQL: "eql?">
+}
+
+
+/* Operadores de atribuição */
+TOKEN : {
+  <ASSIGN: "=">
+| <ASSIGN_ADD: "+=">
+| <ASSIGN_SUB: "-=">
+| <ASSIGN_MUL: "*=">
+| <ASSIGN_DIV: "/=">
+| <ASSIGN_MOD: "%=">
+| <ASSIGN_EXP: "**=">
+| <ASSIGN_AND: "&=">
+| <ASSIGN_OR: "|=">
+| <ASSIGN_XOR: "^=">
+| <ASSIGN_LSHIFT: "<<=">
+| <ASSIGN_RSHIFT: ">>=">
+}
+
+
+/* Operadores lógicos */
+TOKEN : {
+  <LOGICAL_AND: "&&">
+| <LOGICAL_OR: "||">
+| <LOGICAL_NOT: "!" >
+}
+
+
+/* Operadores de bits */
+TOKEN : {
+  <BITWISE_AND: "&">
+| <BITWISE_OR: "|" >
+| <BITWISE_XOR: "^">
+| <BITWISE_NOT: "~">
+| <LEFT_SHIFT: "<<" >
+| <RIGHT_SHIFT: ">>" >
+}
+
+
+/* Operador ternário */
+TOKEN : {
+  <TERNARY_IF: "?">
+| <TERNARY_ELSE: ":" >
+}
+
+
+/* Identificadores */
+TOKEN : {
+  <ID: (["a"-"z", "_"])(["a"-"z", "A"-"Z", "_", "0"-"9"])* >
+}
+
+
+/* Variáveis globais */
+TOKEN : {
+  <GVAR: "$" (["a"-"z", "A"-"Z", "_"])(["a"-"z", "A"-"Z", "_", "0"-"9"])* >
+}
+
+
+/* Variáveis de instância */
+TOKEN : {
+  <IVAR: "@" (["a"-"z", "A"-"Z", "_"])(["a"-"z", "A"-"Z", "_", "0"-"9"])* >
+}
+
+
+/* Constantes */
+TOKEN : {
+  <CONST: (["A"-"Z"])(["a"-"z", "A"-"Z", "_", "0"-"9"])* >
+}
+
+
+/* Numeros */
+TOKEN : {
+  <SINAL: "+" | "-">
+| <INTEIRO: ((<SINAL>)? (["1"-"9"] (["0"-"9"])*)) | "0">
+| <HEXA: "0x" (["0"-"9", "a"-"f", "A"-"F"])+>
+| <OCTAL: "0" (["0"-"7"])*>
+| <BINARIO: "0b" (["0"-"1"])+>
+| <FLOAT: (["-"])? (["0"-"9"])+ "." (["0"-"9"])+ ((["e"] | ["E"]) (["+"] | ["-"])? (["0"-"9"])+)? >
+| <NOTACIENTIFICA: ("-")? ((["0"-"9"])+)? ("." (["0"-"9"])+)? ("e"|"E") ("+" | "-")? (["0"-"9"])+>
+| <COMPLEXO: ((["0"-"9"])+ ("." (["0"-"9"])*)? | "." (["0"-"9"])+) (("e" | "E") ("+" | "-")? (["0"-"9"])+)? ("+" | "-") ((["0"-"9"])+ ("." (["0"-"9"])*)? | "." (["0"-"9"])+) "i" | "j" >
+| <FRACAO: ((["0"-"9"])+ "/" (["0"-"9"])+) >
+| <ASCII: "?" (["a"-"z", "A"-"Z", "0"-"9", "-", "[", "]", "\\", "^", "_", "`", "{", "}", "|", " ", "!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "\\", "]", "^", "_", "`", "{", "|", "}", "~"])* >
+| <SIMBOLO: ":" (["a"-"z", "A"-"Z"] | ["0"-"9"] | "_" | "!" | "?" | "+" | "-" | "*" | "/" | "%" | "&" | "|" | "^" | "<" | ">")* >
+}
+
+/*  Cadeias de Caracteres */
+TOKEN : {
+  < SINGLE_QUOTE_STRING : "'" (~["'", "\\"] | "\\" ["'", "\\", "n", "r", "t"])* "'" >
+| < DOUBLE_QUOTE_STRING : "\"" (~["\"", "\\"] | "\\" ["\"", "\\", "n", "r", "t"])* "\"" >
+}
+
+
+void AnaliseLexica() :
+{ Token t; }
+{
+    (
+          <BEGIN> {System.out.println("<BEGIN> : begin");}
+        | <CLASS> {System.out.println("<CLASS> : class");}
+        | <ENSURE> {System.out.println("<ENSURE> : ensure");}
+        | <NIL> {System.out.println("<NIL> : nil");}
+        | <SELF> {System.out.println("<SELF> : self");}
+        | <WHEN> {System.out.println("<WHEN> : when");}
+        | <END> {System.out.println("<END> : end");}
+        | <DEF> {System.out.println("<DEF> : def");}
+        // | <FALSE> {System.out.println("<FALSE> : false");}
+        | <NOT> {System.out.println("<NOT> : not");}
+        | <SUPER> {System.out.println("<SUPER> : super");}
+        | <WHILE> {System.out.println("<WHILE> : while");}
+        | <ALIAS> {System.out.println("<ALIAS> : alias");}
+        | <DEFINED> {System.out.println("<DEFINED> : defined?");}
+        | <FOR> {System.out.println("<FOR> : for");}
+        | <OR> {System.out.println("<OR> : or");}
+        | <THEN> {System.out.println("<THEN> : then");}
+        | <YIELD> {System.out.println("<YIELD> : yield");}
+        | <AND> {System.out.println("<AND> : and");}
+        | <DO> {System.out.println("<DO> : do");}
+        | <IF> {System.out.println("<IF> : if");}
+        | <REDO> {System.out.println("<REDO> : redo");}
+        | <TRUE> {System.out.println("<TRUE> : true");}
+        | <BEGIN_> {System.out.println("<BEGIN_> : BEGIN");}
+        | <ELSE> {System.out.println("<ELSE> : else");}
+        | <IN> {System.out.println("<IN> : in");}
+        | <RESCUE> {System.out.println("<RESCUE> : rescue");}
+        | <UNDEF> {System.out.println("<UNDEF> : undef");}
+        | <BREAK> {System.out.println("<BREAK> : break");}
+        | <ELSIF> {System.out.println("<ELSIF> : elsif");}
+        | <MODULE> {System.out.println("<MODULE> : module");}
+        | <RETRY> {System.out.println("<RETRY> : retry");}
+        | <UNLESS> {System.out.println("<UNLESS> : unless");}
+        | <CASE> {System.out.println("<CASE> : case");}
+        | <END_> {System.out.println("<END_> : END");}
+        | <NEXT> {System.out.println("<NEXT> : next");}
+        | <RETURN> {System.out.println("<RETURN> : return");}
+        | <UNTIL> {System.out.println("<UNTIL> : until");}
+
+        | <OPEN_PARENTHESIS> {System.out.println("<OPEN_PARENTHESIS>: (");}
+        | <CLOSE_PARENTHESIS> {System.out.println("<CLOSE_PARENTHESIS>: )");}
+        | <OPEN_BRACE> {System.out.println("<OPEN_BRACE>: {");}
+        | <CLOSE_BRACE> {System.out.println("<CLOSE_BRACE>: }");}
+        | <OPEN_BRACKET> {System.out.println("<OPEN_BRACKET>: [");}
+        | <CLOSE_BRACKET> {System.out.println("<CLOSE_BRACKET>: ]");}
+        | <COMMA> {System.out.println("<COMMA>: ,");}
+        | <SEMICOLON> {System.out.println("<SEMICOLON> : ;");}
+        | <DOT> {System.out.println("<DOT>: .");}
+        | <DOUBLE_DOT> {System.out.println("<DOUBLE_DOT>: ..");}
+        | <TRIPLE_DOT> {System.out.println("<TRIPLE_DOT>: ...");}
+        | <DOUBLE_COLON> {System.out.println("<DOUBLE_COLON>: ::");}
+
+        | <ADD> {System.out.println("<ADD>: +");}
+        | <SUB> {System.out.println("<SUB>: -");}
+        | <MUL> {System.out.println("<MUL>: *");}
+        | <DIV> {System.out.println("<DIV>: /");}
+        | <MOD> {System.out.println("<MOD>: %");}
+        | <EXP> {System.out.println("<EXP>: **");}
+        | <EQ> {System.out.println("<EQ>: ==");}
+        | <NEQ> {System.out.println("<NEQ>: !=");}
+        | <GT> {System.out.println("<GT>: >");}
+        | <LT> {System.out.println("<LT>: <");}
+        | <GTE> {System.out.println("<GTE>: >=");}
+        | <LTE> {System.out.println("<LTE>: <=");}
+        | <CMP> {System.out.println("<CMP>: <=>");}
+        | <EQL> {System.out.println("<EQL>: eql?");}
+        | <ASSIGN> {System.out.println("<ASSIGN>: =");}
+        | <ASSIGN_ADD> {System.out.println("<ASSIGN_ADD>: +=");}
+        | <ASSIGN_SUB> {System.out.println("<ASSIGN_SUB>: -=");}
+        | <ASSIGN_MUL> {System.out.println("<ASSIGN_MUL>: *=");}
+        | <ASSIGN_DIV> {System.out.println("<ASSIGN_DIV>: /=");}
+        | <ASSIGN_MOD> {System.out.println("<ASSIGN_MOD>: %=");}
+        | <ASSIGN_EXP> {System.out.println("<ASSIGN_EXP>: **=");}
+        | <ASSIGN_AND> {System.out.println("<ASSIGN_AND>: &=");}
+        | <ASSIGN_OR> {System.out.println("<ASSIGN_OR>: |=");}
+        | <ASSIGN_XOR> {System.out.println("<ASSIGN_XOR>: ^=");}
+        | <ASSIGN_LSHIFT> {System.out.println("<ASSIGN_LSHIFT>: <<=");}
+        | <ASSIGN_RSHIFT> {System.out.println("<ASSIGN_RSHIFT>: >>=");}
+        | <LOGICAL_AND> {System.out.println("<LOGICAL_AND>: &&");}
+        | <LOGICAL_OR> {System.out.println("<LOGICAL_OR>: ||");}
+        | <LOGICAL_NOT> {System.out.println("<LOGICAL_NOT>: !");}
+        |<BITWISE_AND> {System.out.println("<BITWISE_AND>: &");}
+        | <BITWISE_OR> {System.out.println("<BITWISE_OR>: |");}
+        | <BITWISE_XOR> {System.out.println("<BITWISE_XOR>: ^");}
+        | <BITWISE_NOT> {System.out.println("<BITWISE_NOT>: ~");}
+        | <LEFT_SHIFT> {System.out.println("<LEFT_SHIFT>: <<");}
+        | <RIGHT_SHIFT> {System.out.println("<RIGHT_SHIFT>: >>");}
+        | <TERNARY_IF> {System.out.println("<TERNARY_IF>: ?");}
+        | <TERNARY_ELSE> {System.out.println("<TERNARY_ELSE>: :");}
+
+        | t = <ID> { System.out.println("ID: " + t.image); }
+        | t = <GVAR> { System.out.println("GVAR: " + t.image); }
+        | t = <IVAR> { System.out.println("IVAR: " + t.image); }
+        | t = <CONST> { System.out.println("CONST: " + t.image); }
+        | t = <INTEIRO> { System.out.println("INTEIRO: " + t.image); }
+        | t = <HEXA> { System.out.println("HEXA: " + t.image); }
+        | t = <OCTAL> { System.out.println("OCTAL: " + t.image); }
+        | t = <BINARIO> { System.out.println("BINARIO: " + t.image); }
+        | t = <FLOAT> { System.out.println("FLOAT: " + t.image); }
+        | t = <NOTACIENTIFICA> { System.out.println("NOTACIENTIFICA: " + t.image); }
+        | t = <COMPLEXO> { System.out.println("COMPLEXO: " + t.image); }
+        | t = <FRACAO> { System.out.println("FRACAO: " + t.image); }
+        | t = <ASCII> { System.out.println("ASCII: " + t.image); }
+        | t = <SIMBOLO> { System.out.println("SIMBOLO: " + t.image); }
+        | t = <SINGLE_QUOTE_STRING> { System.out.println("SINGLE_QUOTE_STRING: " + t.image); }
+        | t = <DOUBLE_QUOTE_STRING> { System.out.println("DOUBLE_QUOTE_STRING: " + t.image); }
+    )*
+}
